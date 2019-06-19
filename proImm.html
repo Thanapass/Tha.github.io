@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <link href="https://fonts.googleapis.com/css?family=Varela+Round&display=swap" rel="stylesheet">
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" href="ProIm.css">
+  <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Untitled Document</title>
+<script type="text/javascript">
+var bits=80;
+var speed=33;
+var bangs=5;
+var colours=new Array("#03f", "#f03", "#0e0", "#93f", "#0cf", "#f93", "#f0c"); 
+
+var bangheight=new Array();
+var intensity=new Array();
+var colour=new Array();
+var Xpos=new Array();
+var Ypos=new Array();
+var dX=new Array();
+var dY=new Array();
+var stars=new Array();
+var decay=new Array();
+var swide=800;
+var shigh=600;
+var boddie;
+ 
+if (typeof('addRVLoadEvent')!='function') function addRVLoadEvent(funky) {
+  var oldonload=window.onload;
+  if (typeof(oldonload)!='function') window.onload=funky;
+  else window.onload=function() {
+    if (oldonload) oldonload();
+    funky();
+  }
+}
+ 
+addRVLoadEvent(light_blue_touchpaper);
+ 
+function light_blue_touchpaper() { if (document.getElementById) {
+  var i;
+  boddie=document.createElement("div");
+  boddie.style.position="fixed";
+  boddie.style.top="0px";
+  boddie.style.left="0px";
+  boddie.style.overflow="visible";
+  boddie.style.width="1px";
+  boddie.style.height="1px";
+  boddie.style.backgroundColor="transparent";
+  document.body.appendChild(boddie);
+  set_width();
+  for (i=0; i<bangs; i++) {
+    write_fire(i);
+    launch(i);
+    setInterval('stepthrough('+i+')', speed);
+  }
+}}
+ 
+function write_fire(N) {
+  var i, rlef, rdow;
+  stars[N+'r']=createDiv('|', 12);
+  boddie.appendChild(stars[N+'r']);
+  for (i=bits*N; i<bits+bits*N; i++) {
+    stars[i]=createDiv('*', 13);
+    boddie.appendChild(stars[i]);
+  }
+}
+ 
+function createDiv(char, size) {
+  var div=document.createElement("div");
+  div.style.font=size+"px monospace";
+  div.style.position="absolute";
+  div.style.backgroundColor="transparent";
+  div.appendChild(document.createTextNode(char));
+  return (div);
+}
+ 
+function launch(N) {
+  colour[N]=Math.floor(Math.random()*colours.length);
+  Xpos[N+"r"]=swide*0.5;
+  Ypos[N+"r"]=shigh-5;
+  bangheight[N]=Math.round((0.5+Math.random())*shigh*0.4);
+  dX[N+"r"]=(Math.random()-0.5)*swide/bangheight[N];
+  if (dX[N+"r"]>1.25) stars[N+"r"].firstChild.nodeValue="/";
+  else if (dX[N+"r"]<-1.25) stars[N+"r"].firstChild.nodeValue="\\";
+  else stars[N+"r"].firstChild.nodeValue="|";
+  stars[N+"r"].style.color=colours[colour[N]];
+}
+ 
+function bang(N) {
+  var i, Z, A=0;
+  for (i=bits*N; i<bits+bits*N; i++) { 
+    Z=stars[i].style;
+    Z.left=Xpos[i]+"px";
+    Z.top=Ypos[i]+"px";
+    if (decay[i]) decay[i]--;
+    else A++;
+    if (decay[i]==15) Z.fontSize="7px";
+    else if (decay[i]==7) Z.fontSize="2px";
+    else if (decay[i]==1) Z.visibility="hidden";
+	if (decay[i]>1 && Math.random()<.1) {
+	   Z.visibility="hidden";
+	   setTimeout('stars['+i+'].style.visibility="visible"', speed-1);
+	}
+    Xpos[i]+=dX[i];
+    Ypos[i]+=(dY[i]+=1.25/intensity[N]);
+ 
+  }
+  if (A!=bits) setTimeout("bang("+N+")", speed);
+}
+ 
+function stepthrough(N) { 
+  var i, M, Z;
+  var oldx=Xpos[N+"r"];
+  var oldy=Ypos[N+"r"];
+  Xpos[N+"r"]+=dX[N+"r"];
+  Ypos[N+"r"]-=4;
+  if (Ypos[N+"r"]<bangheight[N]) {
+    M=Math.floor(Math.random()*3*colours.length);
+    intensity[N]=5+Math.random()*4;
+    for (i=N*bits; i<bits+bits*N; i++) {
+      Xpos[i]=Xpos[N+"r"];
+      Ypos[i]=Ypos[N+"r"];
+      dY[i]=(Math.random()-0.5)*intensity[N];
+      dX[i]=(Math.random()-0.5)*(intensity[N]-Math.abs(dY[i]))*1.25;
+      decay[i]=16+Math.floor(Math.random()*16);
+      Z=stars[i];
+      if (M<colours.length) Z.style.color=colours[i%2?colour[N]:M];
+      else if (M<2*colours.length) Z.style.color=colours[colour[N]];
+      else Z.style.color=colours[i%colours.length];
+      Z.style.fontSize="13px";
+      Z.style.visibility="visible";
+    }
+    bang(N);
+    launch(N);
+  }
+  stars[N+"r"].style.left=oldx+"px";
+  stars[N+"r"].style.top=oldy+"px";
+} 
+ 
+window.onresize=set_width;
+function set_width() {
+  var sw_min=999999;
+  var sh_min=999999;
+  if (document.documentElement && document.documentElement.clientWidth) {
+    if (document.documentElement.clientWidth>0) sw_min=document.documentElement.clientWidth;
+    if (document.documentElement.clientHeight>0) sh_min=document.documentElement.clientHeight;
+  }
+  if (typeof(self.innerWidth)!="undefined" && self.innerWidth) {
+    if (self.innerWidth>0 && self.innerWidth<sw_min) sw_min=self.innerWidth;
+    if (self.innerHeight>0 && self.innerHeight<sh_min) sh_min=self.innerHeight;
+  }
+  if (document.body.clientWidth) {
+    if (document.body.clientWidth>0 && document.body.clientWidth<sw_min) sw_min=document.body.clientWidth;
+    if (document.body.clientHeight>0 && document.body.clientHeight<sh_min) sh_min=document.body.clientHeight;
+  }
+  if (sw_min==999999 || sh_min==999999) {
+    sw_min=800;
+    sh_min=600;
+  }
+  swide=sw_min;
+  shigh=sh_min;
+}
+// ]]>
+</script>
+</head>
+
+<body>
+  <div class="blue">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <h2 class="blue ">ImmImmProfile</h2>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="./about.html">Home<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Link</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+            </li>
+          </ul>
+          <form class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+          </form>
+        </div>
+      </nav>
+</div>  
+    <div>
+        <div id="myCarousel" class="carousel slide" data-ride="carousel">
+            <ol class="carousel-indicators">
+              <li data-target="#myCarousel" data-slide-to="0"></li>
+              <li data-target="#myCarousel" data-slide-to="1"></li>
+              <li data-target="#myCarousel" data-slide-to="2"></li>
+              <li data-target="#myCarousel" data-slide-to="3"></li>
+            </ol>
+            <div class="carousel-inner center">
+              <div class="carousel-item active">
+                <img style="height: 450px;" class="first-slide" src="https://scontent.fbkk10-1.fna.fbcdn.net/v/t1.0-9/42870006_274293779859719_6631427774152179712_n.jpg?_nc_cat=108&_nc_oc=AQm-y6ZS3SnXDJm97Ls2IvCHVvlkJUWg9CUa-tLw3utoBrHczK7JQwtr7JTAcvPIrjU7utZz3DImQivugCKooyB9&_nc_ht=scontent.fbkk10-1.fna&oh=521abfc3419fb37f7f39f73a3ae7d9da&oe=5D8F97F9" alt="First slide">
+              </div>
+              <div class="carousel-item center">
+                <img style="height: 450px;" class="third-slide" src="https://scontent.fbkk14-1.fna.fbcdn.net/v/t1.0-9/56675191_2067424143306646_4504618896124280832_n.jpg?_nc_cat=100&_nc_oc=AQlOHc91XmSGaqZqqCAF95fohbmNVEmEaq8UtYVSad3ywZU9MKPwuEvAR7A_Zv8rROpn6_7AbvvN4Tm4KK0wqKBD&_nc_ht=scontent.fbkk14-1.fna&oh=bc40f74cfd05eb22dcaf83890e52c3d9&oe=5D86E677" alt="Third slide">
+              </div>
+              <div class="carousel-item center">
+                  <img style="height: 450px;" class="second-slide" src="https://scontent.fbkk10-1.fna.fbcdn.net/v/t1.0-9/57303971_350127708942992_3809032372553252864_n.jpg?_nc_cat=108&_nc_oc=AQnifZNLIFi_afbatnnkgPx-Gqa-5NxgjMLXI25rVt2RoVbIEBMD9MYln94EslYPb6SESYRJFDJm7iJ8KzbLcoCD&_nc_ht=scontent.fbkk10-1.fna&oh=5642540462a661b447ff716bef4e376b&oe=5D890746" alt="Second slide">
+                </div>
+              <div class="carousel-item center">
+                  <img style="height: 450px;" class="second-slide" src="https://scontent.fbkk14-1.fna.fbcdn.net/v/t1.0-9/50064294_314949059127524_909768459494096896_n.jpg?_nc_cat=111&_nc_oc=AQlhV42mYc1Mu6ZzDAunwndcMojjE6kjR61RdbxL1iYhIdYk1OEpLOXQZTms1f9W8dHCnYnZeAQUVofYED_74zkr&_nc_ht=scontent.fbkk14-1.fna&oh=554ec8187839aafe7275578595faaeab&oe=5D897F92" alt="Second slide">
+                </div>
+            </div>
+            <a class="carousel-control-prev" href="#myCarousel" role="button" data-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#myCarousel" role="button" data-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="sr-only">Next</span>
+            </a>
+          </div>
+    </div>
+  <div class="black mt-3">
+    
+    <b class=" font-header blue ml-5" style ="font-family:'Varela Round', sans-serif" a> INFORMATION </b>
+    <p class="font-size ml-5"> NAME: Thanapass Pungsub </p>
+    <p class="font-size ml-5"> AGE: 20 years old </p>
+    <p class="font-size ml-5"> BIRTH: 15 December 1999 </p>
+    <p class="font-size ml-5"> GENDER: Male </p>
+    <p class="font-size ml-5"> INTEREST: Men </p>
+    <p class="font-size ml-5"> UNIVERSITY: Kasetsart University </p>
+    <p class="font-size ml-5">FACEBOOK: <a href="https://www.facebook.com/profile.php?id=100018372961739" target="_top">Thanapass Pungsub</a></p>
+    <p class="font-size ml-5">INSTAGRAM: <a href="https://www.instagram.com/iimmtnp/?hl=th" target="_top">iimmtnp</a></p>
+  </div>
+  <div class="row mb-2">
+    <div class="col-md-6">
+      <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+        <div class="col p-4 d-flex flex-column position-static">
+          <strong class="d-inline-block mb-2 text-primary">Sport</strong>
+          <h3 class="mb-0">Swimming and Basketball</h3>
+          <p class="card-text mb-auto"> This is my favorite sport, though the 2 types of swimming and basketball are sports that are very different.</p>
+          <a href="#" class="stretched-link">Continue reading</a>
+        </div>
+        <div class="col-auto d-none d-lg-block mt-5">
+          <img src="basketball.png" width="300" height="200"></tag>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+        <div class="col p-4 d-flex flex-column position-static">
+          <strong class="d-inline-block mb-2 text-success">Skill</strong>
+          <h3 class="mb-0">Programming Skill</h3>
+          <span>1.JAVA</span>
+          <span>2.PYTHON</span>
+          <span>3.C++/C</span>
+          <span>4.MACRO</span>
+
+          <a href="#" class="stretched-link">Continue reading</a>
+        </div>
+        <div class="col-auto d-none d-lg-block mt-5">
+          <img src="code.jpg" width="300" height="200">
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+        <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+          <div class="col p-4 d-flex flex-column position-static">
+            <strong class="d-inline-block mb-2 text-success">Liking</strong>
+            <h3 class="mb-0">Personal preference</h3>
+            <span>1.Actor:Ratchapat Worrasarn</span>
+            <span>2.Charactor:Kululu</span>
+            <span>3.Dessert:Cake</span>
+            <span>4.Game:ROV</span>
+            <a href="#" class="stretched-link">Continue reading</a>
+          </div>
+          <div class="col-auto d-none d-lg-block mt-5">
+            <img src="husband.jpg" width="300" height="200">
+          </div>
+        </div>
+      </div>
+  </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+body{
+    background-color: rgb(233, 227, 227);
+}
+.center{
+    text-align:center;
+}
+.blue{
+    color: rgb(49, 151, 151);
+}
+.font-size{
+    font-size: 15px;
+}
+.font-header{
+    font-size: 50px;
+    font-family: 'Varela Round', sans-serif;
+}
+.black{
+    color: black
+}
